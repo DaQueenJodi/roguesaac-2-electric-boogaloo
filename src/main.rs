@@ -1,18 +1,23 @@
 pub mod symbols;
 use symbols::Symbol;
 pub mod monsters;
+use monsters::{Monster, MonsterFlavor};
 pub mod room;
-use room::{Room, RoomObj};
+use room::RoomLayout;
+pub mod player;
+use player::Player;
+pub mod tui;
 
 fn main() {
-	let mon = monsters::Spider::default();
-	let mut room = Room::new(10, 10);
-	room.layout[2][3] = RoomObj::Monster(Box::new(mon));
-	let mut syms = String::new();
-	for row in room.layout {
-		for obj in row {
-			syms += obj.symbol();
-		}
+	let player = Player::new();
+	let mons = create_monsters!(MonsterFlavor::Spider, (4, 7),  MonsterFlavor::Spider, (5, 8));
+	let mut room = RoomLayout::new();
+	room.set_size((10, 10));
+	room.enemy(mons[0].clone());
+	room.enemy(mons[1].clone());
+	room.player(player);
+	loop {
+		room.turn();
+		println!("{room}");
 	}
-	println!("{}", syms);
 }
