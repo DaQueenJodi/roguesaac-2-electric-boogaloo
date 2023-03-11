@@ -4,11 +4,11 @@ use crate::monsters::Monster;
 use crate::symbols::Symbol;
 use crate::player::{Player, Direction};
 
+#[derive(Clone)]
 pub struct RoomLayout {
 	enemies: Vec<Monster>,
 	player: Player,
-	size_x: usize,
-	size_y: usize
+	size: (usize, usize)
 }
 
 impl RoomLayout {
@@ -18,37 +18,43 @@ impl RoomLayout {
 	pub fn player(&mut self, player: Player) {
 		self.player = player;
 	}
+	pub fn size(&self) -> (usize, usize) {
+		self.size
+	}
 	pub fn set_size(&mut self, size: (usize, usize)) {
-		self.size_x = size.0;
-		self.size_y = size.1;
+		self.size = size;
 	}
 	pub fn new() -> RoomLayout {
 		RoomLayout {
 			player: Player::new(),
 			enemies: Vec::new(),
-			size_x: 0,
-			size_y: 0
+			size: (0, 0)
 		}
 	}
 	pub fn turn(&mut self) {
-		let mut buff = String::new();
-		io::stdin().read_line(&mut buff).unwrap();
-		let dir = match buff.trim() {
-			"h" => Direction::Left,
-			"j" => Direction::Down,
-			"k" => Direction::Up,
-			"l" => Direction::Right,
-			_ => return
-		};
-		self.player.move_dir(dir);
+        for enemy in &mut self.enemies {
+            enemy.turn()
+        }
+        self.player.turn()
+	}
+	pub fn move_player(&mut self, dir: Direction) {
+		self.player.move_dir(dir, self.clone());
 	}
 }
 
 impl fmt::Display for RoomLayout {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		let (size_x, size_y) = self.size;
 		let mut string = String::new();
-		for y in 0..self.size_x {
-			for x in 0..self.size_y {
+		// draw frame
+		string.push(' ');
+		for _ in 0..size_x {
+			string.push('-');
+		}
+		string += "\r\n";
+		for y in 0..size_y {
+			string.push('|');
+			for x in 0..size_x {
 				let pos = (x, y);
 				if self.player.pos() == pos {
 					string += self.player.symbol();
@@ -58,7 +64,13 @@ impl fmt::Display for RoomLayout {
 					string.push(' ');
 				}
 			}
-			string.push('\n');
+			string.push('|');
+			string += "\r\n";
+		}
+		// draw frame
+		string.push(' ');
+		for _ in 0..size_x {
+			string.push('-');
 		}
 		write!(f, "{string}")
 	}

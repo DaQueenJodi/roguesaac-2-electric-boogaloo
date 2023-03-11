@@ -18,7 +18,8 @@ pub struct Monster {
 	flavor: MonsterFlavor,
 	health: f32,
 	pos: (usize, usize),
-	dead: bool
+	dead: bool,
+    turn_couter: u64
 }
 
 
@@ -30,6 +31,7 @@ impl Monster {
 			flavor,
 			dead: false,
 			pos: (0, 0),
+            turn_couter: 0,
 			// TODO: make health based on the flavor
 			health: 0.0
 		}
@@ -41,6 +43,8 @@ impl Monster {
 			flavor,
 			dead: false,
 			pos,
+			turn_couter: 0,
+			turn_callbacks: 
 			// TODO: make health based on the flavor
 			health: 0.0
 		}
@@ -48,6 +52,12 @@ impl Monster {
 	pub fn pos(&self) -> (usize, usize) {
 		self.pos
 	}
+    pub fn turn(&mut self) {
+        if self.turn_couter % 3 == 0 {
+            self.move();
+        }
+        self.turn_couter += 1;
+    }
 }
 
 impl Symbol for Monster {
